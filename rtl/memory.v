@@ -1,26 +1,25 @@
-// Name: Your Name
-// BU ID: Your ID
-// EC413 Lab 3: Memory
+module ram #(
+	parameter DATA_WIDTH = 32,
+	parameter ADDR_WIDTH = 16
+) (
+	input  clock,
 
-module memory (
-	input clock,
-	input wEn,
-	input [15:0] address,
-	input [31:0] write_data,
-	output [31:0] read_data
+	// Instruction Port
+	input  [ADDR_WIDTH-1:0] i_address,
+	output [DATA_WIDTH-1:0] i_read_data,
+
+	// Data Port
+	input  wEn,
+	input  [ADDR_WIDTH-1:0] d_address,
+	input  [DATA_WIDTH-1:0] d_write_data,
+	output [DATA_WIDTH-1:0] d_read_data
 );
 
-reg [31:0] mem [(2**14)-1:0]; // 2^16 bytes or 2^14 words of memory
-
-wire [15:0] real_address;
-assign real_address = address >> 2;
-assign read_data = mem[real_address[13:0]];
+localparam RAM_DEPTH = 1 << ADDR_WIDTH;
+reg [DATA_WIDTH-1:0] ram [0:RAM_DEPTH-1];
 
 always @(posedge clock) begin
-	if (wEn) begin
-		mem[real_address[13:0]] <= write_data;
-	end
-end
 
+end
 
 endmodule

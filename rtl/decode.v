@@ -1,15 +1,63 @@
-module decode (
+module decode #(
+	parameter ADDRESS_BITS = 16
+) (
+	// Inputs from Fetch
+	input [ADDRESS_BITS-1:0] PC,
 	input [31:0] instruction,
+
+	// Inputs from Execute/ALU
+	input [ADDRESS_BITS-1:0] JALR_target,
+	input branch,
+
+	// Outputs to Fetch
+	output next_PC_select,
+	output [ADDRESS_BITS-1:0] target_PC,
+
+	// Outputs to Reg File
 	output [4:0] read_sel1,
 	output [4:0] read_sel2,
 	output [4:0] write_sel,
-	output wb_sel,
 	output wEn,
+
+	// Outputs to Execute/ALU
+	output branch_op, // true if branch operation
 	output [31:0] imm32,
+	output [1:0] op_A_sel,
 	output op_B_sel,
 	output [5:0] ALU_Control,
-	output mem_wEn
+
+	// Outputs to Memory
+	output mem_wEn,
+
+	// Outputs to Writeback
+	output wb_sel
+
 );
+
+localparam [6:0]
+	R_TYPE  = 7'b0110011,
+	I_TYPE  = 7'b0010011,
+	STORE   = 7'b0100011,
+	LOAD    = 7'b0000011,
+	BRANCH  = 7'b1100011,
+	JALR    = 7'b1100111,
+	JAL     = 7'b1101111,
+	AUIPC   = 7'b0010111,
+	LUI     = 7'b0110111;
+
+// These are internal wires that I used. You can use them but you do not have to.
+// Wires you do not use can be deleted.
+
+
+wire[31:0] sb_imm_32;
+wire[31:0] u_imm_32;
+wire[31:0] i_imm_32;
+wire[31:0] s_imm_32;
+wire[31:0] uj_imm_32;
+
+wire [1:0] extend_sel;
+wire [ADDRESS_BITS-1:0] branch_target;
+wire [ADDRESS_BITS-1:0] jal_target;
 
 localparam [6:0] R_TYPE = 7'b0110011;
 localparam [6:0] I_TYPE = 7'b0010011;
@@ -31,6 +79,13 @@ assign funct3 = instruction[14:12];
 // Immediate
 assign i_imm = instruction[31:20];
 assign s_imm = {instruction[31:25], instruction[4:0]};
+wire[6:0]  s_imm_msb;
+wire[4:0]  s_imm_lsb;
+wire[19:0] u_imm;
+wire[11:0] i_imm_orig;
+wire[19:0] uj_imm;
+wire[11:0] s_imm_orig;
+wire[12:0] sb_imm_orig;
 reg [11:0] imm12_latch;
 
 // static assignments for data buses
@@ -44,6 +99,7 @@ reg op_b_sel_latch;
 reg [5:0] alu_control_latch;
 reg reg_wEn_latch;
 reg mem_wEn_latch;
+
 always @* begin
 	// ALU compute instruction with 2 RS, 1 RD
 	if (opcode == R_TYPE) begin
