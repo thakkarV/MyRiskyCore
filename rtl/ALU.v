@@ -45,7 +45,7 @@ always @* begin
 		2'b00:
 			case (funct3)
 				FUNCT3_ADD: output_reg = $signed(operand_A) + $signed(operand_B);
-                // for 2'b00 SHL is a logical shift right
+                // for 2'b00 SHL is a logical shift left
                 FUNCT3_SHL: output_reg = operand_A << operand_B;
 				FUNCT3_SLT: output_reg = {31'b, alu_lts};
 				FUNCT3_SLTU: output_reg = {31'b, alu_ltu};
@@ -62,10 +62,10 @@ always @* begin
             case (funct3)
 				FUNCT3_ADD: output_reg = $signed(operand_A) - $signed(operand_B);
 
-                // for 2'b00 SHL is an airthmetic shift right
+                // for 2'b01 SHL is an airthmetic shift left
                 FUNCT3_SHL: output_reg = $signed(operand_A) <<< $signed(operand_B);
 
-                // for 2'b00 SHR is an airthmetic shift right
+                // for 2'b01 SHR is an airthmetic shift right
 				FUNCT3_SHR: output_reg = $signed(operand_A) >>> $signed(operand_B);
 			endcase
 
