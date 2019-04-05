@@ -8,6 +8,8 @@ module ALU (
 );
 
 reg [31:0] output_reg;
+reg branch_reg;
+
 wire [2:0] funct3;
 assign funct3 = ALU_Control[2:0];
 
@@ -42,7 +44,7 @@ end
 always @* begin
 	case (ALU_Control[4:3])
 		// add, and, or, xor, logical shifts
-		2'b00:
+		2'b00: begin
 			case (funct3)
 				FUNCT3_ADD: output_reg = $signed(operand_A) + $signed(operand_B);
                 // for 2'b00 SHL is a logical shift left
@@ -55,9 +57,11 @@ always @* begin
 				FUNCT3_OR:  output_reg = operand_A | operand_B;
 				FUNCT3_AND: output_reg = operand_A & operand_B;
 			endcase
+            branch_reg = 0;
+        end
 
 		// arithmetic shifts, sub
-		2'b01:
+		2'b01: begin
             /* verilator lint_off CASEINCOMPLETE */
             case (funct3)
 				FUNCT3_ADD: output_reg = $signed(operand_A) - $signed(operand_B);
@@ -68,25 +72,32 @@ always @* begin
                 // for 2'b01 SHR is an airthmetic shift right
 				FUNCT3_SHR: output_reg = $signed(operand_A) >>> $signed(operand_B);
 			endcase
+            branch_reg = 0;
+        end
 
 		// branch comparisions
-		2'b10:
+		2'b10: begin
             /* verilator lint_off CASEINCOMPLETE */
 			case (funct3)
-                FUNCT3_BEQ:  output_reg = {31'b0, alu_eq};
-                FUNCT3_BNE:  output_reg = {31'b0, !alu_eq};
-                FUNCT3_BLT:  output_reg = {31'b0, alu_lts};
-                FUNCT3_BGE:  output_reg = {31'b0, !alu_lts};
-                FUNCT3_BLTU: output_reg = {31'b0, alu_ltu};
-                FUNCT3_BGEU: output_reg = {31'b0, !alu_ltu};
+                FUNCT3_BEQ:  branch_reg = alu_eq;
+                FUNCT3_BNE:  branch_reg = !alu_eq;
+                FUNCT3_BLT:  branch_reg = alu_lts;
+                FUNCT3_BGE:  branch_reg = !alu_lts;
+                FUNCT3_BLTU: branch_reg = alu_ltu;
+                FUNCT3_BGEU: branch_reg = !alu_ltu;
 			endcase
+            output_reg = 32'b0;
+        end
 
 		// jal/jalr, passthrough op A
-		2'b11:
+		2'b11: begin
 			output_reg = operand_A;
+            branch_reg = 0;
+        end
 	endcase
 end
 
+assign branch = branch_reg;
 assign ALU_result = output_reg;
 
 endmodule
