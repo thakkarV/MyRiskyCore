@@ -12,8 +12,16 @@ module fetch #(
 	output [ADDRESS_BITS-1:0] PC
 );
 
-reg [ADDRESS_BITS-1:0] PC_reg;
-
-assign PC = PC_reg;
+reg [ADDRESS_BITS-1:0] pc_reg;
+always @(posedge clock) begin
+    if (reset) pc_reg = 0;
+    else begin
+        if (next_PC_select)
+            pc_reg = target_PC;
+        else
+            pc_reg = pc_reg + 4;
+    end
+end
+assign PC = pc_reg;
 
 endmodule
