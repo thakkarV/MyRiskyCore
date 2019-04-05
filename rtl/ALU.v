@@ -49,8 +49,8 @@ always @* begin
 				FUNCT3_ADD: output_reg = $signed(operand_A) + $signed(operand_B);
                 // for 2'b00 SHL is a logical shift left
                 FUNCT3_SHL: output_reg = operand_A << operand_B;
-				FUNCT3_SLT: output_reg = {31'b, alu_lts};
-				FUNCT3_SLTU: output_reg = {31'b, alu_ltu};
+				FUNCT3_SLT: output_reg = {31'b0, alu_lts};
+				FUNCT3_SLTU: output_reg = {31'b0, alu_ltu};
 				FUNCT3_XOR: output_reg = operand_A ^ operand_B;
                 // for 2'b00 SHR is a logical shift right
 				FUNCT3_SHR: output_reg = operand_A >> operand_B;
