@@ -127,6 +127,9 @@ initial begin
   #10
   $display("ALU Result (SLT): %d",result); //should be 0
 		
+  ctrl = 6'b000_011; // SLTU
+  #10
+  $display("ALU Result (SLTU): %d",result); //should be 0
   #10
   $stop();
 
