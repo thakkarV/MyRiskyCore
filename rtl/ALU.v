@@ -91,8 +91,8 @@ always @* begin
 
 		// jal/jalr, passthrough op A
 		2'b11: begin
+            branch_reg = 1;
 			output_reg = operand_A;
-            branch_reg = 0;
         end
 	endcase
 end
