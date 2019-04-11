@@ -95,7 +95,7 @@ initial begin
   #10
   $display("ALU Result (XORI): %d",result); //should be 13
 	
-  ctrl = 6'b000_100; // ORI
+  ctrl = 6'b000_110; // ORI
   #10
   $display("ALU Result (ORI): %d",result); //should be 15
 
