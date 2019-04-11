@@ -168,7 +168,7 @@ always @* begin
 		alu_op_b_sel_reg = 0;
         branch_op_reg = 1;
         imm32_reg = j_imm32;
-        reg_wEn_reg = 0;
+        reg_wEn_reg = 1;
         mem_wEn_reg = 0;
         wb_sel_reg = 0;
     end
@@ -176,7 +176,7 @@ always @* begin
     // jalr
     else if (opcode == JALR) begin
         alu_control_reg = 6'b111_111;
-		alu_op_a_sel_reg = 2'b10;
+		alu_op_a_sel_reg = 2'b00;
 		alu_op_b_sel_reg = 0;
         branch_op_reg = 1;
         imm32_reg = i_imm32;

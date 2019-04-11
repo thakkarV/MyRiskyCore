@@ -92,7 +92,12 @@ always @* begin
 		// jal/jalr, passthrough op A
 		2'b11: begin
             branch_reg = 1;
-			output_reg = operand_A;
+            if (ALU_Control[5] == 1) begin
+                output_reg = $signed(operand_A) + $signed(operand_B);
+            end
+            else begin
+			    output_reg = operand_A;
+            end
         end
 	endcase
 end
