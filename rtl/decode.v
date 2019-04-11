@@ -215,6 +215,7 @@ always @* begin
         alu_op_a_sel_reg = 2'b0;
 		alu_op_b_sel_reg = 0;
         branch_op_reg = 0;
+        imm32_reg = i_imm32;
 		reg_wEn_reg = 0;
         mem_wEn_reg = 0;
 		wb_sel_reg = 0;
