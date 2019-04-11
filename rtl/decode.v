@@ -84,6 +84,9 @@ reg op_b_sel_reg;
 reg [5:0] alu_control_reg;
 reg reg_wEn_reg;
 reg mem_wEn_reg;
+reg branch_op_reg;
+reg next_PC_select_reg;
+reg [ADDRESS_BITS-1:0] target_PC_reg;
 always @* begin
 	// ALU compute instr with 2 RS, 1 RD
 	if (opcode == R_TYPE) begin
@@ -131,7 +134,20 @@ always @* begin
 
     // branch instructions
     else if (opcode == BRANCH) begin
-
+	    wEn = 0;
+	    mem_wEn = 0;
+	    op_b_sel_reg = 0;
+	    wb_sel_reg = 0;
+	    branch_op_reg = 1;
+	    imm_32_reg = b_imm32;
+	    alu_control_reg = {ZERO_3, funct3};
+	    if(branch) begin
+		    next_PC_select_reg = 1;
+		    target_PC_reg = PC +  b_imm32;
+	    end else begin
+	    	next_PC_select_reg = 0;
+		target_PC_reg = PC + 4;
+	    end    
     end
 
     // jal
@@ -169,4 +185,7 @@ assign op_B_sel = op_b_sel_reg;
 assign wEn = reg_wEn_reg;
 assign mem_wEn = mem_wEn_reg;
 assign imm32 = imm32_reg;
+assign branch_op = branch_op_reg;
+assign next_PC_select =  next_PC_select_reg;
+assign target_PC = target_PC_reg;
 endmodule
