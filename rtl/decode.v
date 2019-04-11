@@ -60,9 +60,9 @@ assign write_sel = instr[11:7];
 // all immediate types; sign extension always uses instr[31]
 wire [31:0] i_imm32 = {{20{instr[31]}}, instr[31:20]};
 wire [31:0] s_imm32 = {{20{instr[31]}}, instr[31:25], instr[11:7]};
-wire [31:0] b_imm32 = {{20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 0};
+wire [31:0] b_imm32 = {{20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0};
 wire [31:0] u_imm32 = {instr[31:12], 12'b0};
-wire [31:0] j_imm32 = {{12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 0};
+wire [31:0] j_imm32 = {{12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
 
 // combinational logic for control buses
 reg [5:0] alu_control_reg;
@@ -83,7 +83,7 @@ always @* begin
     if (branch) begin
         next_pc_select_reg = 1;
         if (opcode == BRANCH) begin
-            branch_target = PC + b_imm32;
+            branch_target = {16'b0, PC} + b_imm32;
             target_pc_reg = branch_target[ADDRESS_BITS-1:0];
         end
         else if (opcode == JAL || opcode == JALR) begin
