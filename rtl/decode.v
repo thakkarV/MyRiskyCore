@@ -85,6 +85,7 @@ always @* begin
         if (opcode == BRANCH) begin
             branch_target = PC + b_imm32;
             target_pc_reg = branch_target[ADDRESS_BITS-1:0];
+        end
         else if (opcode == JAL || opcode == JALR) begin
             target_pc_reg = JALR_target;
         end
@@ -220,7 +221,7 @@ end
 
 // assign downstream control wires
 assign ALU_Control = alu_control_reg;
-assign op_A_sel - alu_op_a_sel_reg;
+assign op_A_sel = alu_op_a_sel_reg;
 assign op_B_sel = alu_op_b_sel_reg;
 assign branch_op = branch_op_reg;
 assign imm32 = imm32_reg;
