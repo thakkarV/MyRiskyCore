@@ -69,7 +69,7 @@ reg [5:0] alu_control_reg;
 reg [1:0] alu_op_a_sel_reg;
 reg alu_op_b_sel_reg;
 reg branch_op_reg;
-reg  [31:0] imm32_reg;
+reg [31:0] imm32_reg;
 reg reg_wEn_reg;
 reg mem_wEn_reg;
 reg wb_sel_reg;
@@ -83,7 +83,7 @@ always @* begin
     if (branch) begin
         next_pc_select_reg = 1;
         if (opcode == BRANCH) begin
-            branch_target = {16'b0, PC} + b_imm32;
+            branch_target = $signed({16'b0, PC}) + $signed(b_imm32);
             target_pc_reg = branch_target[ADDRESS_BITS-1:0];
         end
         else if (opcode == JAL || opcode == JALR) begin
