@@ -99,7 +99,7 @@ always @* begin
 	// ALU compute instr with 2 RS, 1 RD
 	if (opcode == R_TYPE) begin
         // sub or other?
-		if (funct7 == 7'b0100000) alu_control_reg = {3'b001, funct3};
+		if (funct7[5] == 1'b1) alu_control_reg = {3'b001, funct3};
 		else alu_control_reg = {ZERO_3, funct3};
 		alu_op_a_sel_reg = 2'b0;
 		alu_op_b_sel_reg = 1;
@@ -111,7 +111,7 @@ always @* begin
 
 	// ALU compute with 1 RS and immediate
 	else if (opcode == I_TYPE) begin
-		if (funct7 == 7'b0100000) alu_control_reg = {3'b001, funct3};
+		if (funct7[5] == 1'b1) alu_control_reg = {3'b001, funct3};
 		else alu_control_reg = {ZERO_3, funct3};
         alu_op_a_sel_reg = 2'b0;
 		alu_op_b_sel_reg = 0;
