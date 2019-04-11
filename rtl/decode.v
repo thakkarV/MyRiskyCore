@@ -189,7 +189,7 @@ always @* begin
     else if (opcode == AUIPC) begin
         alu_control_reg = 6'b000_000;
 		alu_op_a_sel_reg = 2'b01;
-		alu_op_b_sel_reg = 1;
+		alu_op_b_sel_reg = 0;
         branch_op_reg = 0;
         imm32_reg = u_imm32;
         reg_wEn_reg = 1;
@@ -201,7 +201,7 @@ always @* begin
     else if (opcode == LUI) begin
         alu_control_reg = 6'b000_000;
 		alu_op_a_sel_reg = 2'b0;
-		alu_op_b_sel_reg = 1;
+		alu_op_b_sel_reg = 0;
         branch_op_reg = 0;
         imm32_reg = u_imm32;
         reg_wEn_reg = 1;
