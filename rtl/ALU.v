@@ -93,6 +93,7 @@ always @* begin
 		2'b11: begin
             branch_reg = 1;
             output_reg = $signed(operand_A) + $signed(operand_B);
+            output_reg[0] = 1'b0;
         end
 	endcase
 end
