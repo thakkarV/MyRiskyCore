@@ -3,7 +3,7 @@ module decode #(
 ) (
 	// Inputs from Fetch
 	input [ADDRESS_BITS-1:0] PC,
-	input [31:0] instr,
+	input [31:0] instruction,
 
 	// Inputs from Execute/ALU
 	input [ADDRESS_BITS-1:0] JALR_target,
@@ -48,6 +48,7 @@ localparam [2:0] ZERO_3 = 3'b000;
 
 // static decoding into different fields of all instruction types
 // major and minor opcodes
+wire [31:0] instr = instruction;
 wire [6:0] opcode = instr[6:0];
 wire [6:0] funct7 = instr[31:25];
 wire [2:0] funct3 = instr[14:12];
