@@ -187,7 +187,7 @@ initial begin
 ******************************************************************************/
   branch = 1'b1;
   PC = 16'h0004;
-  instruction = 32'b0010000_01110_01100_000_00000_1100011; // beq, a2, a4, 16
+  instruction = 32'b0_010000_01110_01100_000_0000_0_1100011; // beq, a2, a4, 16
   //(branch_op = 1, next_PC_select = 1, target_PC = 20)
 
   #10
@@ -196,14 +196,14 @@ initial begin
 	
   branch = 1'b0;
   PC = 16'h0000;
-  instruction = 32'b0011000_01111_01100_001_00000_1100011; // bne, a2, a5, 24
+  instruction = 32'b0_000001_01111_01100_001_1000_0_1100011; // bne, a2, a5, 24
 	//(branch_op = 1, next_PC_select = 0, target_PC = 4)
 	
   #10
 	$display("bne a2, a5, 24");
   print_state();
 
-  instruction = 32'b0011100_01111_01101_100_00000_1100011; // blt, a3, a5, 28
+  instruction = 32'b0_000001_01111_01101_100_1100_0_1100011; // blt, a3, a5, 28
 	//(branch_op = 1, next_PC_select = 0, target_PC = 8)
 
   #10
@@ -211,7 +211,7 @@ initial begin
   print_state();
   
   branch = 1'b1;
-  instruction = 32'b0100000_01111_01110_101_00000_1100011; // bge, a4, a5, 32
+  instruction = 32'b0_000010_01111_01110_101_0000_0_1100011; // bge, a4, a5, 32
   //(branch_op = 1, next_PC_select = 1, target_PC = 40) 
 
   #10
@@ -219,14 +219,14 @@ initial begin
   print_state();
 	
   
-  instruction = 32'b0101000_10000_01110_110_00000_1100011; // bltu, a4, a6, 40
+  instruction = 32'b0_000010_10000_01110_110_1000_0_1100011; // bltu, a4, a6, 40
   //(branch_op = 1, next_PC_select = 1, target_PC = 80)
 	
   #10
   $display("bltu a4, a6");
   print_state();
 	
-  instruction = 32'b0010000_10000_01111_111_00000_1100011; // bgeu, a5, a6, 16
+  instruction = 32'b0_000001_10000_01111_111_0000_0_1100011; // bgeu, a5, a6, 16
   //(branch_op = 1, next_PC_select = 1, target_PC = 96)
 	
   #10
