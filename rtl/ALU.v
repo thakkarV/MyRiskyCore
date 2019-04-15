@@ -86,13 +86,13 @@ always @* begin
                 FUNCT3_BLTU: branch_reg = alu_ltu;
                 FUNCT3_BGEU: branch_reg = !alu_ltu;
 			endcase
-            output_reg = 32'b0;
+            output_reg = {31'b0, branch_reg};
         end
 
-		// jal/jalr, passthrough op A
+		// jal/jalr, passthrough op A, no branch
 		2'b11: begin
-            branch_reg = 1;
-            output_reg = $signed(operand_A) + $signed(operand_B);
+            branch_reg = 0;
+            output_reg = operand_A;
             output_reg[0] = 1'b0;
         end
 	endcase
