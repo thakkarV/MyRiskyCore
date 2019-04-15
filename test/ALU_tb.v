@@ -1,7 +1,3 @@
-// Name: Your Name
-// BU ID: Your ID
-// EC413 Project: ALU Test Bench
-
 module ALU_tb();
 reg branch_op;
 reg [5:0] ctrl;
@@ -51,14 +47,14 @@ initial begin
   #10
   $display("ALU Result (BNE): %d",result);
   $display("Branch (should be 0): %b", branch);
-	
+
   ctrl = 6'b010_100; // BLT
   opA = 4;
   opB = 5;
   #10
   $display("ALU Result (BLT): %d",result);
   $display("Branch (should be 1): %b", branch);
-	
+
   ctrl = 6'b010_101; // BGE
   #10
   $display("ALU Result (BGE): %d",result);
@@ -75,16 +71,16 @@ initial begin
   #10
   $display("ALU Result (BGEU): %d",result);
   $display("Branch (should be 1): %b", branch);
-	
+
   branch_op = 1'b0;
   ctrl = 6'b011_111; // JAL
   #10
   $display("ALU Result (JAL): %d",result); //should be 5
-	
+
   ctrl = 6'b111_111; // JALR
   #10
   $display("ALU Result (JALR): %d",result); //should be 5
-	
+
   ctrl = 6'b000_011; // SLTI
   #10
   $display("ALU Result (SLTI): %d",result); //should be 0
@@ -94,7 +90,7 @@ initial begin
   ctrl = 6'b000_100; // XORI
   #10
   $display("ALU Result (XORI): %d",result); //should be 13
-	
+
   ctrl = 6'b000_110; // ORI
   #10
   $display("ALU Result (ORI): %d",result); //should be 15
@@ -107,7 +103,7 @@ initial begin
   ctrl = 6'b000_001; // SLLI
   #10
   $display("ALU Result (SLLI): %d",result); //should be 20
- 
+
   ctrl = 6'b000_101; // SRLI
   #10
   $display("ALU Result (SRLI): %d",result); //should be 5
@@ -116,17 +112,17 @@ initial begin
   ctrl = 6'b001_101; // SRAI
   #10
   $display("ALU Result (SRAI): %d",result); //should be -5
-	
+
   opA = 10;
   opB = -5;
   ctrl = 6'b001_000; // SUB
   #10
   $display("ALU Result (SUB): %d",result); //should be 15
-	
+
   ctrl = 6'b000_010; // SLT
   #10
   $display("ALU Result (SLT): %d",result); //should be 0
-		
+
   ctrl = 6'b000_011; // SLTU
   #10
   $display("ALU Result (SLTU): %d",result); //should be 0

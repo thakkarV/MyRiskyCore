@@ -1,7 +1,3 @@
-// Name: Your Name
-// BU ID: Your ID
-// EC413 Project: Top Level Module Test Bench
-
 module top_tb();
 
 reg clock;

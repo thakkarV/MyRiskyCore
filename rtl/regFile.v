@@ -1,5 +1,3 @@
-// Vijay Thakkar
-
 module regFile (
 	input clock,
 	input reset,

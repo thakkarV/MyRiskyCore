@@ -1,7 +1,3 @@
-// Name: Your Name
-// BU ID: Your ID
-// EC413 Project: Fetch Test Bench
-
 module fetch_tb();
 
 parameter ADDRESS_BITS = 16;

@@ -1,7 +1,3 @@
-// Name: Your Name
-// BU ID: Your ID
-// EC413 Lab 2 Problem 1: Register File Test Bench
-
 module regFile_tb();
 
 reg clock, reset, write_enable;

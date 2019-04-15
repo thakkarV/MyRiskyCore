@@ -1,7 +1,3 @@
-// Name: Your Name
-// BU ID: Your ID
-// EC413 Lab 3: Memory Test Bench
-
 module memory_tb();
 
 reg clock;

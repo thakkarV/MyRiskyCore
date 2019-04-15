@@ -1,7 +1,3 @@
-// Name: Your Name
-// BU ID: Your ID
-// EC413 Project: Decode Test Bench
-
 module decode_tb();
 
 parameter NOP = 32'b000000000000_00000_000_00000_0010011; // addi zero, zero, 0
@@ -193,12 +189,12 @@ initial begin
   #10
   $display("beq a2, a4, 16");
   print_state();
-	
+
   branch = 1'b0;
   PC = 16'h0000;
   instruction = 32'b0_000001_01111_01100_001_1000_0_1100011; // bne, a2, a5, 24
 	//(branch_op = 1, next_PC_select = 0, target_PC = 4)
-	
+
   #10
 	$display("bne a2, a5, 24");
   print_state();
@@ -209,37 +205,37 @@ initial begin
   #10
   $display("blt a3, a5, 28");
   print_state();
-  
+
   branch = 1'b1;
   instruction = 32'b0_000010_01111_01110_101_0000_0_1100011; // bge, a4, a5, 32
-  //(branch_op = 1, next_PC_select = 1, target_PC = 40) 
+  //(branch_op = 1, next_PC_select = 1, target_PC = 40)
 
   #10
   $display("bge a4, a5, 32");
   print_state();
-	
-  
+
+
   instruction = 32'b0_000010_10000_01110_110_1000_0_1100011; // bltu, a4, a6, 40
   //(branch_op = 1, next_PC_select = 1, target_PC = 80)
-	
+
   #10
   $display("bltu a4, a6");
   print_state();
-	
+
   instruction = 32'b0_000001_10000_01111_111_0000_0_1100011; // bgeu, a5, a6, 16
   //(branch_op = 1, next_PC_select = 1, target_PC = 96)
-	
+
   #10
   $display("bgeu a5, a6");
   print_state();
-  
+
   branch = 1'b0;
   instruction = 32'b00000000000001000000_01010_1100011; // lui, a1, 64
 
   #10
   $display("lui a1, 64");
   print_state();
-	
+
   instruction = 32'b00000000000001000000_01011_0010111; // auipc, a2, 64
 
   #10

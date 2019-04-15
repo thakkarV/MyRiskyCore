@@ -1,7 +1,3 @@
-// Name: Your Name
-// BU ID: Your ID
-// EC413 Project: Fetch Module
-
 module fetch #(
 	parameter ADDRESS_BITS = 16
 ) (
