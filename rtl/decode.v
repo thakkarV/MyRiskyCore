@@ -65,6 +65,16 @@ wire [31:0] b_imm32 = {{20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b
 wire [31:0] u_imm32 = {instr[31:12], 12'b0};
 wire [31:0] j_imm32 = {{12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
 
+// FETCH OUTPUT: PC addresses for branching instructions
+// first we calculate the address
+// then truncate to the size of the address width
+wire [31:0] jal_target_32 =  {{ADDRESS_BITS{1'b0}}, PC} + $signed(j_imm32);
+// jalr address is calculated by the toplevel since it needs read_data1
+wire [31:0] branch_target_32 = $signed({16'b0, PC}) + $signed(b_imm32);
+wire [ADDRESS_BITS-1:0] jal_target = jal_target_32[ADDRESS_BITS-1:0];
+wire [ADDRESS_BITS-1:0] jalr_target = JALR_target;
+wire [ADDRESS_BITS-1:0] branch_target = branch_target_32[ADDRESS_BITS-1:0];
+
 // combinational logic for control buses
 reg [5:0] alu_control_reg;
 reg [1:0] alu_op_a_sel_reg;
@@ -77,26 +87,28 @@ reg wb_sel_reg;
 
 reg next_pc_select_reg;
 reg [ADDRESS_BITS-1:0] target_pc_reg;
-reg [31:0] branch_target;
 
+// UPSTREAM: SET FETCH PC
 always @* begin
-    // set fetch for next cycle
+    // if branching, set the PC according to the type of branch instruction
     if (branch) begin
-        next_pc_select_reg = 1;
-        if (opcode == BRANCH) begin
-            branch_target = $signed({16'b0, PC}) + $signed(b_imm32);
-            target_pc_reg = branch_target[ADDRESS_BITS-1:0];
-        end
-        else if (opcode == JAL || opcode == JALR) begin
-            target_pc_reg = JALR_target;
-        end
-    end
-    else begin
-        next_pc_select_reg = 0;
-        target_pc_reg = 0;
+        next_pc_select_reg = 1'b1
+        // branch target is calculated locally inside the decoder
+        if (opcode == BRANCH) target_pc_reg = branch_target;
+        // jal target is calculated locally inside the decoder
+        else if (opcode == JAL) target_pc_reg = jal_target;
+        // jalr target is calculated in the top level module
+        else if (opcode == JALR) target_pc_reg = jalr_target;
     end
 
-    // decode and set control signals
+    // if not a branch-like instruction, set PC to PC + 4
+    else begin
+        next_pc_select_reg = 1'b0;
+    end
+end
+
+// DOWNSTREAM: SET CONTROL SIGNALS
+always @* begin
 	// ALU compute instr with 2 RS, 1 RD
 	if (opcode == R_TYPE) begin
         // sub or other?
@@ -176,7 +188,7 @@ always @* begin
     // jalr
     else if (opcode == JALR) begin
         alu_control_reg = 6'b111_111;
-		alu_op_a_sel_reg = 2'b00;
+		alu_op_a_sel_reg = 2'b10;
 		alu_op_b_sel_reg = 0;
         branch_op_reg = 1;
         imm32_reg = i_imm32;
