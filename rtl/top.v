@@ -118,8 +118,7 @@ regFile regFile_inst (
 );
 
 // assign operand A
-wire [31:0] pc_32;
-assign pc_32[15:0] = pc;
+wire [31:0] pc_32 = {{ADDRESS_BITS{1'b0}}, pc};
 assign alu_op_a = alu_op_a_sel == 2'b00 ? reg_read_data1 :
 				  alu_op_a_sel == 2'b01 ? pc_32 :
 				  alu_op_a_sel == 2'b10 ? (pc_32 + 4) : reg_read_data1;
