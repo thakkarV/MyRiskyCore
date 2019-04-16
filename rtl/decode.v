@@ -92,7 +92,7 @@ reg [ADDRESS_BITS-1:0] target_pc_reg;
 always @* begin
     // if branching, set the PC according to the type of branch instruction
     if (branch) begin
-        next_pc_select_reg = 1'b1
+        next_pc_select_reg = 1'b1;
         // branch target is calculated locally inside the decoder
         if (opcode == BRANCH) target_pc_reg = branch_target;
         // jal target is calculated locally inside the decoder
