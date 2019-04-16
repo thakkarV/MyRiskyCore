@@ -18,13 +18,11 @@ wire mem_wen;
 wire [4:0] reg_read_sel1;
 wire [4:0] reg_read_sel2;
 wire [4:0] reg_write_sel;
-
 // to alu
 wire [31:0] imm32;
 wire [5:0] alu_control;
 wire [1:0] alu_op_a_sel;
 wire alu_op_b_sel;
-
 // to fetch
 wire branch_op;
 wire next_pc_sel;
@@ -53,7 +51,7 @@ wire alu_branch;
 // JALR target address is assigned outside of the ALU because
 // ALU output is passing op A (PC + 4) through for writeback to link register
 wire [31:0] jalr_target_32 = $signed(reg_read_data1) + $signed(imm32);
-wire [ADDRESS_BITS-1:0] jalr_target = jalr_target_32[15:0];
+wire [ADDRESS_BITS-1:0] jalr_target = jalr_target_32[ADDRESS_BITS-1:0];
 
 // wb_sel is TRUE if we are reading from memory into register
 // wb_sel is FALSE if we are writing ALU result to register
