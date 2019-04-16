@@ -8,7 +8,7 @@ module top #(
 
 // FETCH Wires
 wire [ADDRESS_BITS-1:0] pc;
-wire [31:0] instruction;
+wire [31:0] instruction = mem_i_read_data;
 
 // DECODE wires
 // to reg/mem
@@ -37,11 +37,11 @@ wire [31:0] reg_read_data2;
 wire [31:0] mem_read_data;
 
 // MEM wires
-wire [ADDRESS_BITS-1:0] mem_i_address;
+wire [ADDRESS_BITS-1:0] mem_i_address = pc;
 wire [31:0] mem_i_read_data;
-wire [ADDRESS_BITS-1:0] mem_d_address;
+wire [ADDRESS_BITS-1:0] mem_d_address = alu_result[ADDRESS_BITS-1:0];
 wire [31:0] mem_d_read_data;
-wire [31:0] mem_write_data;
+wire [31:0] mem_write_data = reg_read_data2;
 
 // EXECUTION Wires
 wire [31:0] alu_op_a;
