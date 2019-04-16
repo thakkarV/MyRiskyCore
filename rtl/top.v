@@ -37,9 +37,9 @@ wire [31:0] reg_read_data2;
 wire [31:0] mem_read_data;
 
 // MEM wires
-wire [31:0] mem_i_address;
+wire [ADDRESS_BITS-1:0] mem_i_address;
 wire [31:0] mem_i_read_data;
-wire [31:0] mem_d_address;
+wire [ADDRESS_BITS-1:0] mem_d_address;
 wire [31:0] mem_d_read_data;
 wire [31:0] mem_write_data;
 
@@ -52,11 +52,12 @@ wire alu_branch;
 // MISC wires
 // JALR target address is assigned outside of the ALU because
 // ALU output is passing op A (PC + 4) through for writeback to link register
-wire [ADDRESS_BITS-1:0] jalr_target = $signed(read_data1) + $signed(imm32);
+wire [31:0] jalr_target_32 = $signed(reg_read_data1) + $signed(imm32);
+wire [ADDRESS_BITS-1:0] jalr_target = jalr_target_32[15:0];
 
 // wb_sel is TRUE if we are reading from memory into register
 // wb_sel is FALSE if we are writing ALU result to register
-assign wb_data = wb_sel == 1'b1 ? mem_d_read_data : alu_result;
+assign wb_data = reg_wb_sel == 1'b1 ? mem_d_read_data : alu_result;
 assign reg_write_data = wb_data;
 
 fetch #(
@@ -65,7 +66,7 @@ fetch #(
 	.clock(clock),
 	.reset(reset),
 	.next_PC_select(next_pc_sel),
-	.target_PC(target_pc),
+	.target_PC(fetch_target_pc),
 	.PC(pc)
 );
 
@@ -79,11 +80,11 @@ decode #(
 
 	// Inputs from Execute/ALU
 	.JALR_target(jalr_target),
-	.branch(branch),
+	.branch(alu_branch),
 
 	// Outputs to Fetch
 	.next_PC_select(next_pc_sel),
-	.target_PC(target_pc),
+	.target_PC(fetch_target_pc),
 
 	// Outputs to Reg File
 	.read_sel1(reg_read_sel1),
@@ -119,11 +120,13 @@ regFile regFile_inst (
 );
 
 // assign operand A
+wire [31:0] pc_32;
+assign pc_32[15:0] = pc;
 assign alu_op_a = alu_op_a_sel == 2'b00 ? reg_read_data1 :
-				  alu_op_a_sel == 2'b01 ? pc :
-				  alu_op_a_sel == 2'b10 ? (pc + 4) : reg_read_data1;
+				  alu_op_a_sel == 2'b01 ? pc_32 :
+				  alu_op_a_sel == 2'b10 ? (pc_32 + 4) : reg_read_data1;
 // assign operand B
-assign alu_op_b = alu_op_b_sel == 1'b_0 ? read_data2 : imm32;
+assign alu_op_b = alu_op_b_sel == 1'b_0 ? reg_read_data2 : imm32;
 ALU alu_inst(
 	.branch_op(branch_op),
 	.ALU_Control(alu_control),
@@ -144,7 +147,7 @@ ram #(
 	.i_read_data(mem_i_read_data),
 
 	// Data Port
-	.wEn(mem_wem),
+	.wEn(mem_wen),
 	.d_address(mem_d_address),
 	.d_write_data(mem_write_data),
 	.d_read_data(mem_d_read_data)
