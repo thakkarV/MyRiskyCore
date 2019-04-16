@@ -89,10 +89,11 @@ always @* begin
             output_reg = {31'b0, branch_reg};
         end
 
-		// jal/jalr, passthrough op A, no branch
+		// jal/jalr, pass-through op A for write back, which is set to PC + 4
+        // indicate branch so that decode can change pc
 		2'b11: begin
-            branch_reg = 0;
-            output_reg[0] = 1'b0;
+            branch_reg = 1'b1;
+            output_reg = operand_A;
         end
 	endcase
 end
