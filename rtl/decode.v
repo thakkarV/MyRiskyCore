@@ -64,7 +64,6 @@ wire [31:0] s_imm32 = {{20{instr[31]}}, instr[31:25], instr[11:7]};
 wire [31:0] b_imm32 = {{20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0};
 wire [31:0] u_imm32 = {instr[31:12], 12'b0};
 wire [31:0] j_imm32 = {{12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
-assign JALR_target =
 
 // combinational logic for control buses
 reg [5:0] alu_control_reg;
