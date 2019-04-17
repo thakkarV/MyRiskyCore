@@ -24,7 +24,7 @@ wire [5:0] alu_control;
 wire [1:0] alu_op_a_sel;
 wire alu_op_b_sel;
 // to fetch
-wire branch_op;
+wire is_decode_branch_instr;
 wire next_pc_sel;
 wire [ADDRESS_BITS-1:0] fetch_target_pc;
 
@@ -45,7 +45,7 @@ wire [31:0] mem_write_data = reg_read_data2;
 wire [31:0] alu_op_a;
 wire [31:0] alu_op_b;
 wire [31:0] alu_result;
-wire alu_branch;
+wire alu_is_branch_taken;
 
 // MISC wires
 // JALR target address is assigned outside of the ALU because
@@ -78,7 +78,7 @@ decode #(
 
 	// Inputs from Execute/ALU
 	.JALR_target(jalr_target),
-	.branch(alu_branch),
+	.branch(alu_is_branch_taken),
 
 	// Outputs to Fetch
 	.next_PC_select(next_pc_sel),
@@ -91,7 +91,7 @@ decode #(
 	.wEn(reg_wen),
 
 	// Outputs to Execute/ALU
-	.branch_op(branch_op),
+	.branch_op(is_decode_branch_instr),
 	.imm32(imm32),
 	.op_A_sel(alu_op_a_sel),
 	.op_B_sel(alu_op_b_sel),
@@ -125,12 +125,12 @@ assign alu_op_a = alu_op_a_sel == 2'b00 ? reg_read_data1 :
 // assign operand B
 assign alu_op_b = alu_op_b_sel == 1'b_0 ? reg_read_data2 : imm32;
 ALU alu_inst(
-	.branch_op(branch_op),
+	.branch_op(is_decode_branch_instr),
 	.ALU_Control(alu_control),
 	.operand_A(alu_op_a),
 	.operand_B(alu_op_b),
 	.ALU_result(alu_result),
-	.branch(alu_branch)
+	.branch(alu_is_branch_taken)
 );
 
 
