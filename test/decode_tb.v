@@ -230,16 +230,16 @@ initial begin
   print_state();
 
   branch = 1'b0;
-  instruction = 32'b00000000000001000000_01010_1100011; // lui, a1, 64
+  instruction = 32'b00000000000001000000_00101_0110111; // lui, x5, 64
 
   #10
-  $display("lui a1, 64");
+  $display("lui x5, 64");
   print_state();
 
-  instruction = 32'b00000000000001000000_01011_0010111; // auipc, a2, 64
+  instruction = 32'b00000000000001000000_01011_0010111; // auipc, x11, 64
 
   #10
-  $display("auipc a2, 64");
+  $display("auipc x11, 64");
   print_state();
 
   #10
