@@ -13,6 +13,13 @@ reg branch_reg;
 wire [2:0] funct3;
 assign funct3 = ALU_Control[2:0];
 
+// ALU Quadrants
+localparam [1:0]
+    ALU_BLOCK0 = 2'b00,
+    ALU_BLOCK1 = 2'b01,
+    ALU_BLOCK2 = 2'b10,
+    ALU_BLOCK3 = 2'b11;
+
 // ALU functions
 localparam [2:0]
     FUNCT3_ADD  = 3'b000,
@@ -34,71 +41,51 @@ localparam [2:0]
     FUNCT3_BGEU = 3'b111;
 
 // comparators
-reg alu_eq, alu_lts, alu_ltu;
-always @* begin
-    alu_eq  = operand_A == operand_B;
-    alu_lts = $signed(operand_A) < $signed(operand_B);
-    alu_ltu = operand_A < operand_B;
-end
+wire alu_eq  = operand_A == operand_B;
+wire alu_neq = ~alu_eq;
+wire alu_lts = $signed(operand_A) < $signed(operand_B);
+wire alu_ges = ~alu_lts;
+wire alu_ltu = $unsigned(operand_A) < $unsigned(operand_B);
+wire alu_geu = ~alu_ltu;
 
-always @* begin
-	case (ALU_Control[4:3])
-		// add, and, or, xor, logical shifts
-		2'b00: begin
-			case (funct3)
-				FUNCT3_ADD: output_reg = $signed(operand_A) + $signed(operand_B);
-                // for 2'b00 SHL is a logical shift left
-                FUNCT3_SHL: output_reg = operand_A << operand_B;
-				FUNCT3_SLT: output_reg = {31'b0, alu_lts};
-				FUNCT3_SLTU: output_reg = {31'b0, alu_ltu};
-				FUNCT3_XOR: output_reg = operand_A ^ operand_B;
-                // for 2'b00 SHR is a logical shift right
-				FUNCT3_SHR: output_reg = operand_A >> operand_B;
-				FUNCT3_OR:  output_reg = operand_A | operand_B;
-				FUNCT3_AND: output_reg = operand_A & operand_B;
-			endcase
-            branch_reg = 0;
-        end
+// add, and, or, xor, logical shifts
+wire [31:0] alu_b0_result =
+        (funct3 == FUNCT3_ADD)  ? $signed(operand_A) + $signed(operand_B) :
+        (funct3 == FUNCT3_SHL)  ? operand_A << operand_B :
+        (funct3 == FUNCT3_SLT)  ? {31'b0, alu_lts} :
+        (funct3 == FUNCT3_SLTU) ? {31'b0, alu_ltu} :
+        (funct3 == FUNCT3_XOR)  ? operand_A ^ operand_B :
+        (funct3 == FUNCT3_SHR)  ? operand_A >> operand_B :
+        (funct3 == FUNCT3_OR)   ? operand_A | operand_B :
+        /* funct3 == FUNCT3_AND */operand_A & operand_B;
 
-		// arithmetic shifts, sub
-		2'b01: begin
-            /* verilator lint_off CASEINCOMPLETE */
-            case (funct3)
-				FUNCT3_ADD: output_reg = $signed(operand_A) - $signed(operand_B);
+// arithmetic shifts, sub
+wire [31:0] alu_b1_result =
+    (funct3 == FUNCT3_ADD) ? $signed(operand_A)  -  $signed(operand_B) :
+    // for 2'b01 SHL is an airthmetic shift left
+    (funct3 == FUNCT3_SHL) ? $signed(operand_A) <<< $signed(operand_B) :
+    // for 2'b01 SHR is an airthmetic shift right
+    (funct3 == FUNCT3_SHR) ? $signed(operand_A) >>> $signed(operand_B) :
+    /* should never get here, illegal */ 32'b0;
 
-                // for 2'b01 SHL is an airthmetic shift left
-                FUNCT3_SHL: output_reg = $signed(operand_A) <<< $signed(operand_B);
+    // branch comparisions
+wire [31:0] alu_b2_result =
+        (funct3 == FUNCT3_BEQ)  ? {31'b0, alu_eq}  :
+        (funct3 == FUNCT3_BNE)  ? {31'b0, alu_neq} :
+        (funct3 == FUNCT3_BLT)  ? {31'b0, alu_lts} :
+        (funct3 == FUNCT3_BGE)  ? {31'b0, alu_ges} :
+        (funct3 == FUNCT3_BLTU) ? {31'b0, alu_ltu} :
+        /* (funct3 == FUNCT3_BGEU) */ {31'b0, alu_geu};
 
-                // for 2'b01 SHR is an airthmetic shift right
-				FUNCT3_SHR: output_reg = $signed(operand_A) >>> $signed(operand_B);
-			endcase
-            branch_reg = 0;
-        end
+// jal/jalr, pass-through op A for write back, which is set to PC + 4
+wire [31:0] alu_b3_result = operand_A;
 
-		// branch comparisions
-		2'b10: begin
-            /* verilator lint_off CASEINCOMPLETE */
-			case (funct3)
-                FUNCT3_BEQ:  branch_reg = alu_eq;
-                FUNCT3_BNE:  branch_reg = !alu_eq;
-                FUNCT3_BLT:  branch_reg = alu_lts;
-                FUNCT3_BGE:  branch_reg = !alu_lts;
-                FUNCT3_BLTU: branch_reg = alu_ltu;
-                FUNCT3_BGEU: branch_reg = !alu_ltu;
-			endcase
-            output_reg = {31'b0, branch_reg};
-        end
+wire [1:0] alu_block = ALU_Control[4:3];
+assign ALU_result =
+    (alu_block == ALU_BLOCK0) ? alu_b0_result :
+    (alu_block == ALU_BLOCK1) ? alu_b1_result :
+    (alu_block == ALU_BLOCK2) ? alu_b2_result : alu_b3_result;
 
-		// jal/jalr, pass-through op A for write back, which is set to PC + 4
-        // indicate branch so that decode can change pc
-		2'b11: begin
-            branch_reg = 1'b1;
-            output_reg = operand_A;
-        end
-	endcase
-end
-
-assign branch = branch_reg;
-assign ALU_result = output_reg;
+assign branch = (alu_block == ALU_BLOCK2) ? alu_b3_result[0] : 0;
 
 endmodule

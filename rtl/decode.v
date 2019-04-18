@@ -44,8 +44,6 @@ localparam [6:0]
 	AUIPC   = 7'b0010111,
 	LUI     = 7'b0110111;
 
-localparam [2:0] ZERO_3 = 3'b000;
-
 // static decoding into different fields of all instruction types
 // major and minor opcodes
 wire [31:0] instr = instruction;
@@ -75,176 +73,60 @@ wire [ADDRESS_BITS-1:0] jal_target = jal_target_32[ADDRESS_BITS-1:0];
 wire [ADDRESS_BITS-1:0] jalr_target = JALR_target;
 wire [ADDRESS_BITS-1:0] branch_target = branch_target_32[ADDRESS_BITS-1:0];
 
-// combinational logic for control buses
-reg [5:0] alu_control_reg;
-reg [1:0] alu_op_a_sel_reg;
-reg alu_op_b_sel_reg;
-reg branch_op_reg;
-reg [31:0] imm32_reg;
-reg reg_wEn_reg;
-reg mem_wEn_reg;
-reg wb_sel_reg;
-
-reg next_pc_select_reg;
-reg [ADDRESS_BITS-1:0] target_pc_reg;
-
 // UPSTREAM: SET FETCH PC
-always @* begin
-    // if branching, set the PC according to the type of branch instruction
-    if (branch) begin
-        next_pc_select_reg = 1'b1;
-        // branch target is calculated locally inside the decoder
-        if (opcode == BRANCH) target_pc_reg = branch_target;
-        // jal target is calculated locally inside the decoder
-        else if (opcode == JAL) target_pc_reg = jal_target;
-        // jalr target is calculated in the top level module
-        else if (opcode == JALR) target_pc_reg = jalr_target;
-    end
+assign next_PC_select = (((opcode == BRANCH) & (branch == 1)) |
+						 (opcode == JAL)                      |
+						 (opcode == JALR)
+						) ? 1 : 0;
 
-    // if not a branch-like instruction, set PC to PC + 4
-    else begin
-        next_pc_select_reg = 1'b0;
-    end
-end
+// if branching, set the PC according to the type of branch instruction
+// branch target is calculated locally inside the decoder
+assign target_PC = ((opcode == BRANCH) & (branch == 1)) ? branch_target :
+	// jal target is calculated locally inside the decoder
+	(opcode == JAL)  ? jal_target :
+	// jalr target is calculated in the top level module
+	(opcode == JALR) ? jalr_target : 32'b0;
+
 
 // DOWNSTREAM: SET CONTROL SIGNALS
-always @* begin
-	// ALU compute instr with 2 RS, 1 RD
-	if (opcode == R_TYPE) begin
-        // sub or other?
-		if (funct7[5] == 1'b1) alu_control_reg = {3'b001, funct3};
-		else alu_control_reg = {ZERO_3, funct3};
-		alu_op_a_sel_reg = 2'b0;
-		alu_op_b_sel_reg = 1;
-        branch_op_reg = 0;
-		reg_wEn_reg = 1;
-        mem_wEn_reg = 0;
-		wb_sel_reg = 0;
-	end
+assign ALU_Control =
+	// Quadrant 2'b00 or 2'b01 : arithmetic
+	(( (opcode == R_TYPE) | (opcode == I_TYPE)) & (funct7[5] == 0)
+	// Address generation arithmetic
+	 | (opcode == LOAD)
+	 | (opcode == STORE)) ? {3'b000, funct3} :
+	(((opcode == R_TYPE) | (opcode == I_TYPE)) & (funct7[5] == 1)) ? {3'b001, funct3} :
+	((opcode == LUI) | (opcode == AUIPC)) ? 6'b0 :
+	(opcode == BRANCH) ? {3'b010, funct3} :
+	(opcode == JAL)    ? 6'b011_111       :
+	(opcode == JALR)   ? 6'b111_111 : 6'b0;
 
-	// ALU compute with 1 RS and immediate
-	else if (opcode == I_TYPE) begin
-		if (funct7[5] == 1'b1) alu_control_reg = {3'b001, funct3};
-		else alu_control_reg = {ZERO_3, funct3};
-        alu_op_a_sel_reg = 2'b0;
-		alu_op_b_sel_reg = 0;
-        branch_op_reg = 0;
-		imm32_reg = i_imm32;
-		reg_wEn_reg = 1;
-        mem_wEn_reg = 0;
-		wb_sel_reg = 0;
-	end
+assign imm32 = (opcode == I_TYPE) ? i_imm32 :
+			   (opcode == LOAD)   ? i_imm32 :
+			   (opcode == STORE)  ? s_imm32 :
+			   (opcode == BRANCH) ? b_imm32 :
+			   (opcode == JAL)    ? j_imm32 :
+			   (opcode == JALR)   ? i_imm32 :
+			   (opcode == AUIPC)  ? u_imm32 :
+			   (opcode == LUI)    ? u_imm32 : i_imm32;
 
-	// load word
-	else if (opcode == LOAD) begin
-		// for load/store, ALU acts as AGU
-		alu_control_reg = {ZERO_3, funct3};
-        alu_op_a_sel_reg = 2'b0;
-		alu_op_b_sel_reg = 0;
-        branch_op_reg = 0;
-		imm32_reg = i_imm32;
-		reg_wEn_reg = 1;
-        mem_wEn_reg = 0;
-		wb_sel_reg = 1;
-	end
+assign op_A_sel = ((opcode == JAL) | (opcode == JALR)) ? 2'b10 :
+				  (opcode == AUIPC) ? 2'b01 : 2'b00;
 
-	// store word
-	else if (opcode == STORE) begin
-		// for load/store, ALU acts as AGU
-		alu_control_reg = {ZERO_3, funct3};
-        alu_op_a_sel_reg = 2'b0;
-		alu_op_b_sel_reg = 0;
-        branch_op_reg = 0;
-		imm32_reg = s_imm32;
-		reg_wEn_reg = 0;
-        mem_wEn_reg = 1;
-		wb_sel_reg = 0;
-	end
+assign op_B_sel = ((opcode == R_TYPE) | (opcode == BRANCH)) ? 1 : 0;
 
-    // branch instructions
-    else if (opcode == BRANCH) begin
-        alu_control_reg = {3'b010, funct3};
-        alu_op_a_sel_reg = 2'b0;
-		alu_op_b_sel_reg = 1;
-        branch_op_reg = 1;
-        imm32_reg = b_imm32;
-        reg_wEn_reg = 0;
-        mem_wEn_reg = 0;
-        wb_sel_reg = 0;
-    end
+assign wEn = ((opcode == R_TYPE) |
+              (opcode == I_TYPE) |
+              (opcode == LOAD)   |
+              (opcode == JALR)   |
+              (opcode == JAL)    |
+              (opcode == AUIPC)  |
+              (opcode == LUI)) ? 1 : 0;
 
-    // jal
-    else if (opcode == JAL) begin
-        alu_control_reg = 6'b011_111;
-		alu_op_a_sel_reg = 2'b10;
-		alu_op_b_sel_reg = 0;
-        branch_op_reg = 1;
-        imm32_reg = j_imm32;
-        reg_wEn_reg = 1;
-        mem_wEn_reg = 0;
-        wb_sel_reg = 0;
-    end
+assign mem_wEn   = (opcode == STORE) ? 1 : 0;
 
-    // jalr
-    else if (opcode == JALR) begin
-        alu_control_reg = 6'b111_111;
-		alu_op_a_sel_reg = 2'b10;
-		alu_op_b_sel_reg = 0;
-        branch_op_reg = 1;
-        imm32_reg = i_imm32;
-        reg_wEn_reg = 1;
-        mem_wEn_reg = 0;
-        wb_sel_reg = 0;
-    end
+assign branch_op = (opcode == BRANCH) ? 1 : 0;
 
-    // auipc
-    else if (opcode == AUIPC) begin
-        alu_control_reg = 6'b000_000;
-		alu_op_a_sel_reg = 2'b01;
-		alu_op_b_sel_reg = 0;
-        branch_op_reg = 0;
-        imm32_reg = u_imm32;
-        reg_wEn_reg = 1;
-        mem_wEn_reg = 0;
-        wb_sel_reg = 0;
-    end
+assign wb_sel    = (opcode == LOAD) ? 1 : 0;
 
-    // lui
-    else if (opcode == LUI) begin
-        alu_control_reg = 6'b000_000;
-		alu_op_a_sel_reg = 2'b0;
-		alu_op_b_sel_reg = 0;
-        branch_op_reg = 0;
-        imm32_reg = u_imm32;
-        reg_wEn_reg = 1;
-        mem_wEn_reg = 0;
-        wb_sel_reg = 0;
-    end
-
-	// otherwise switch off all control signals, nop
-	else begin
-        alu_control_reg = 6'b0;
-        alu_op_a_sel_reg = 2'b0;
-		alu_op_b_sel_reg = 0;
-        branch_op_reg = 0;
-        imm32_reg = i_imm32;
-		reg_wEn_reg = 0;
-        mem_wEn_reg = 0;
-		wb_sel_reg = 0;
-	end
-end
-
-// assign downstream control wires
-assign ALU_Control = alu_control_reg;
-assign op_A_sel = alu_op_a_sel_reg;
-assign op_B_sel = alu_op_b_sel_reg;
-assign branch_op = branch_op_reg;
-assign imm32 = imm32_reg;
-assign wEn = reg_wEn_reg;
-assign mem_wEn = mem_wEn_reg;
-assign wb_sel = wb_sel_reg;
-
-// assign upstream fetch wires
-assign next_PC_select = next_pc_select_reg;
-assign target_PC = target_pc_reg;
 endmodule
