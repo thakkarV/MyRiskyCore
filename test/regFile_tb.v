@@ -28,8 +28,6 @@ initial begin
 	read_sel1 = 5'b0;
 	read_sel2 = 5'b0;
 	write_sel = 5'b0;
-	read_data1 = 32'bX;
-	read_data2 = 32'bX;
 	write_data = 32'bX;
 	write_enable = 1'b0;
 
