@@ -16,13 +16,15 @@ module ram #(
 );
 
 localparam RAM_DEPTH = 1 << ADDR_WIDTH;
-reg [DATA_WIDTH-1:0] sram [0:RAM_DEPTH-1];
+reg [DATA_WIDTH-1:0] memory [0:RAM_DEPTH-1];
 
 // combinational read for instruction fetch
-assign d_read_data = sram[d_address];
+assign word_aligned_d_addr = d_address >> 2;
+assign d_read_data = sram[word_aligned_d_addr];
 
 // combinational read for data
-assign i_read_data = sram[i_address];
+assign word_aligned_i_addr = i_address >> 2;
+assign i_read_data = sram[word_aligned_i_addr];
 
 // write on the pos-edge for the data
 always @(posedge clock) begin
