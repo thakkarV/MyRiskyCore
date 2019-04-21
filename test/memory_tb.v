@@ -4,7 +4,6 @@ reg clock;
 reg wEn;
 reg [15:0] address;
 reg [31:0] write_data;
-
 wire [31:0] read_data;
 
 memory uut (
@@ -17,33 +16,15 @@ memory uut (
 
 always #5 clock = ~clock;
 
-
 initial begin
   clock = 1'b1;
+  write_data = 0;
   address = 16'd0;
   write_data = 16'd0;
   wEn = 1'b0;
 
-  always #5 clock = ~clock;
-
-task print_state;
-  begin
-    $display("Time:\t%0d", $time);
-    for( x=0; x<32; x=x+1) begin
-      $display("Register %d: %h", x, dut.regFile_inst.reg_file[x]);
-    end
-    $display("--------------------------------------------------------------------------------");
-    $display("\n\n");
-  end
-endtask
-
-initial begin
-  clock = 1'b1;
-  reset = 1'b1;
-  write_data = 0;
-  // Make sure the .vmh file is in the same directory that you launched the
-  // simulation from.
-  $readmemh("./fibonacci.vmh", dut.main_memory.ram);
+//  $readmemh("/home/void/Desktop/ClassStuff/MyRiskyCore/test/fibonacci.vmh", uut.main_memory.sram); // Should put 0x00000015 in register x9
+  $readmemh("/home/void/Desktop/ClassStuff/MyRiskyCore/test/gcd.vmh", uut.main_memory.sram); // Should put 0x00000010 in register x9
 
   // read loaded instruction stream
   #10
