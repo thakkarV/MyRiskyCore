@@ -26,8 +26,6 @@ always #5 clock = ~clock;
 initial begin
 	clock = 1;
 	i_address = 32'h134;
-	d_write_data = 0;
-	d_address = 0;
 	wEn = 1'b0;
 
 	//  $readmemh("/home/void/Desktop/ClassStuff/MyRiskyCore/test/fibonacci.vmh", uut.memory);
@@ -75,6 +73,7 @@ initial begin
 	d_address = 4;
 	#10
 	$display("d_address %d: %h", d_address, d_read_data);
+	wEn = 1;
 	d_write_data = -1;
 	d_address = 8;
 	#10
