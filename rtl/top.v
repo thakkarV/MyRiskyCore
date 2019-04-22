@@ -8,7 +8,7 @@ module top #(
 
 // FETCH Wires
 wire [ADDRESS_BITS-1:0] pc;
-wire [31:0] instruction = mem_i_read_data;
+wire [31:0] instruction;
 
 // DECODE wires
 // to reg/mem
@@ -34,18 +34,18 @@ wire [31:0] reg_read_data1;
 wire [31:0] reg_read_data2;
 wire [31:0] mem_read_data;
 
-// MEM wires
-wire [ADDRESS_BITS-1:0] mem_i_address = pc;
-wire [31:0] mem_i_read_data;
-wire [ADDRESS_BITS-1:0] mem_d_address = alu_result[ADDRESS_BITS-1:0];
-wire [31:0] mem_d_read_data;
-wire [31:0] mem_write_data = reg_read_data2;
-
 // EXECUTION Wires
 wire [31:0] alu_op_a;
 wire [31:0] alu_op_b;
 wire [31:0] alu_result;
 wire alu_is_branch_taken;
+
+// MEM wires
+//wire [ADDRESS_BITS-1:0] mem_i_address is the same as pc;
+//wire [31:0] mem_i_read_data is the same as instruction;
+wire [ADDRESS_BITS-1:0] mem_d_address = alu_result[ADDRESS_BITS-1:0];
+wire [31:0] mem_d_read_data;
+wire [31:0] mem_write_data = reg_read_data2;
 
 // MISC wires
 // JALR target address is assigned outside of the ALU because
@@ -140,8 +140,8 @@ ram #(
 	.clock(clock),
 
 	// Instruction Port
-	.i_address(mem_i_address),
-	.i_read_data(mem_i_read_data),
+	.i_address(pc),
+	.i_read_data(instruction),
 
 	// Data Port
 	.wEn(mem_wen),
