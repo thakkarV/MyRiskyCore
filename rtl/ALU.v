@@ -65,9 +65,9 @@ wire [31:0] alu_b0_result =
 wire [31:0] alu_b1_result =
     (funct3 == FUNCT3_ADD) ? $signed(operand_A)  -  $signed(operand_B) :
     // for 2'b01 SHL is an airthmetic shift left
-    (funct3 == FUNCT3_SHL) ? $signed(operand_A) <<< $signed(shift_val) :
+    (funct3 == FUNCT3_SHL) ? $signed(operand_A) <<< shift_val :
     // for 2'b01 SHR is an airthmetic shift right
-    (funct3 == FUNCT3_SHR) ? $signed(operand_A) >>> $signed(shift_val) :
+    (funct3 == FUNCT3_SHR) ? $signed(operand_A) >>> shift_val :
     /* should never get here, illegal */ 32'b0;
 
     // branch comparisions
