@@ -1,3 +1,4 @@
+`timescale 1 ns / 1 ps
 module ALU (
 	input branch_op,
 	input [5:0]  ALU_Control,
@@ -10,8 +11,9 @@ module ALU (
 reg [31:0] output_reg;
 reg branch_reg;
 
-wire [2:0] funct3;
-assign funct3 = ALU_Control[2:0];
+wire [2:0] funct3    = ALU_Control[2:0];
+wire [1:0] alu_block = ALU_Control[4:3];
+wire [4:0] shift_val = operand_B[4:0];
 
 // ALU Quadrants
 localparam [1:0]
@@ -55,7 +57,7 @@ wire [31:0] alu_b0_result =
         (funct3 == FUNCT3_SLT)  ? {31'b0, alu_lts} :
         (funct3 == FUNCT3_SLTU) ? {31'b0, alu_ltu} :
         (funct3 == FUNCT3_XOR)  ? operand_A ^ operand_B :
-        (funct3 == FUNCT3_SHR)  ? operand_A >> operand_B :
+        (funct3 == FUNCT3_SHR)  ? operand_A >> shift_val :
         (funct3 == FUNCT3_OR)   ? operand_A | operand_B :
         /* funct3 == FUNCT3_AND */operand_A & operand_B;
 
@@ -63,9 +65,9 @@ wire [31:0] alu_b0_result =
 wire [31:0] alu_b1_result =
     (funct3 == FUNCT3_ADD) ? $signed(operand_A)  -  $signed(operand_B) :
     // for 2'b01 SHL is an airthmetic shift left
-    (funct3 == FUNCT3_SHL) ? $signed(operand_A) <<< $signed(operand_B) :
+    (funct3 == FUNCT3_SHL) ? $signed(operand_A) <<< $signed(shift_val) :
     // for 2'b01 SHR is an airthmetic shift right
-    (funct3 == FUNCT3_SHR) ? $signed(operand_A) >>> $signed(operand_B) :
+    (funct3 == FUNCT3_SHR) ? $signed(operand_A) >>> $signed(shift_val) :
     /* should never get here, illegal */ 32'b0;
 
     // branch comparisions
@@ -80,7 +82,6 @@ wire [31:0] alu_b2_result =
 // jal/jalr, pass-through op A for write back, which is set to PC + 4
 wire [31:0] alu_b3_result = operand_A;
 
-wire [1:0] alu_block = ALU_Control[4:3];
 assign ALU_result =
     (alu_block == ALU_BLOCK0) ? alu_b0_result :
     (alu_block == ALU_BLOCK1) ? alu_b1_result :
