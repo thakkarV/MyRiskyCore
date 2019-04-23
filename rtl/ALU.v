@@ -53,7 +53,7 @@ wire alu_geu = ~alu_ltu;
 // add, and, or, xor, logical shifts
 wire [31:0] alu_b0_result =
         (funct3 == FUNCT3_ADD)  ? $signed(operand_A) + $signed(operand_B) :
-        (funct3 == FUNCT3_SHL)  ? operand_A << operand_B :
+        (funct3 == FUNCT3_SHL)  ? operand_A << shift_val :
         (funct3 == FUNCT3_SLT)  ? {31'b0, alu_lts} :
         (funct3 == FUNCT3_SLTU) ? {31'b0, alu_ltu} :
         (funct3 == FUNCT3_XOR)  ? operand_A ^ operand_B :
