@@ -1,3 +1,4 @@
+`timescale 1 ns / 1 ps
 module top #(
 	parameter ADDRESS_BITS = 16
 ) (
@@ -119,11 +120,11 @@ regFile regFile_inst (
 
 // assign operand A
 wire [31:0] pc_32 = {{ADDRESS_BITS{1'b0}}, pc};
-assign alu_op_a = alu_op_a_sel == 2'b00 ? reg_read_data1 :
-				  alu_op_a_sel == 2'b01 ? pc_32 :
-				  alu_op_a_sel == 2'b10 ? (pc_32 + 4) : reg_read_data1;
+assign alu_op_a = (alu_op_a_sel == 2'b00) ? reg_read_data1 :
+				  (alu_op_a_sel == 2'b01) ? pc_32 :
+				  (alu_op_a_sel == 2'b10) ? (pc_32 + 4) : reg_read_data1;
 // assign operand B
-assign alu_op_b = alu_op_b_sel == 1'b_0 ? reg_read_data2 : imm32;
+assign alu_op_b = (alu_op_b_sel == 1'b_0) ? imm32 : reg_read_data2;
 ALU alu_inst(
 	.branch_op(is_decode_branch_instr),
 	.ALU_Control(alu_control),
