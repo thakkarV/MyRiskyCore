@@ -87,6 +87,6 @@ assign ALU_result =
     (alu_block == ALU_BLOCK1) ? alu_b1_result :
     (alu_block == ALU_BLOCK2) ? alu_b2_result : alu_b3_result;
 
-assign branch = (alu_block == ALU_BLOCK2) ? alu_b3_result[0] : 0;
+assign branch = (alu_block == ALU_BLOCK2) ? alu_b2_result[0] : 0;
 
 endmodule
