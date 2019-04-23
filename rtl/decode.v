@@ -1,3 +1,4 @@
+`timescale 1 ns / 1 ps
 module decode #(
 	parameter ADDRESS_BITS = 16
 ) (
@@ -91,12 +92,14 @@ assign target_PC = ((opcode == BRANCH) & (branch == 1)) ? branch_target :
 // DOWNSTREAM: SET CONTROL SIGNALS
 assign ALU_Control =
 	// Quadrant 2'b00 or 2'b01 : arithmetic
-	(( (opcode == R_TYPE) | (opcode == I_TYPE)) & (funct7[5] == 0)
-	// Address generation arithmetic
-	 | (opcode == LOAD)
-	 | (opcode == STORE)) ? {3'b000, funct3} :
-	(((opcode == R_TYPE) | (opcode == I_TYPE)) & (funct7[5] == 1)) ? {3'b001, funct3} :
-	((opcode == LUI) | (opcode == AUIPC)) ? 6'b0 :
+    (opcode == R_TYPE) ? {2'b0, funct7[5], funct3} :
+	(opcode == I_TYPE) ?
+        // for I type left or right shifts, take care of logical and arithmetic shifts
+        ((funct3 == 3'b001) | (funct3 == 3'b101)) ? {2'b0, funct7[5], funct3} :
+                                                    {3'b0, funct3}
+        :
+    // Address generation arithmetic
+	((opcode == LOAD) | (opcode == STORE) | (opcode == LUI) | (opcode == AUIPC)) ? 6'b0 :
 	(opcode == BRANCH) ? {3'b010, funct3} :
 	(opcode == JAL)    ? 6'b011_111       :
 	(opcode == JALR)   ? 6'b111_111 : 6'b0;
