@@ -1,4 +1,4 @@
-module memory_tb();
+module ram_tb();
 
 reg clock;
 reg wEn;
@@ -28,7 +28,6 @@ initial begin
 	i_address = 32'h134;
 	wEn = 1'b0;
 
-	//  $readmemh("/home/void/Desktop/ClassStuff/MyRiskyCore/test/fibonacci.vmh", uut.memory);
 	$readmemh("/home/void/Desktop/ClassStuff/MyRiskyCore/test/gcd.vmh", uut.ram);
 
 	// read loaded instruction stream
