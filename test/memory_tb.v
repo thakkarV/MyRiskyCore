@@ -1,24 +1,37 @@
-module memory_tb();
+module ram_tb();
 
-reg clock;
-reg wEn;
-reg [15:0] i_address;
-wire [31:0] i_read_data;
+parameter DATA_WIDTH = 32;
+parameter ADDR_WIDTH = 16;
 
-reg [15:0] d_address;
-wire [31:0] d_read_data;
-reg [31:0] d_write_data;
+reg  clock;
+
+// Instruction Port
+reg  [ADDR_WIDTH-1:0] i_address;
+wire [DATA_WIDTH-1:0] i_read_data;
+
+// Data Port
+reg  wEn;
+reg  [ADDR_WIDTH-1:0] d_address;
+reg  [DATA_WIDTH-1:0] d_write_data;
+wire [DATA_WIDTH-1:0] d_read_data;
+
 
 ram #(
-	.ADDR_WIDTH(16)
+  .DATA_WIDTH(DATA_WIDTH),
+  .ADDR_WIDTH(ADDR_WIDTH)
 ) uut (
-	.clock(clock),
-    .i_address(i_address),
-    .i_read_data(i_read_data),
-	.wEn(wEn),
-    .d_address(d_address),
-    .d_read_data(d_read_data),
-    .d_write_data(d_write_data)
+  .clock(clock),
+
+  // Instruction Port
+  .i_address(i_address),
+  .i_read_data(i_read_data),
+
+  // Data Port
+  .wEn(wEn),
+  .d_address(d_address),
+  .d_write_data(d_write_data),
+  .d_read_data(d_read_data)
+
 );
 
 always #5 clock = ~clock;
